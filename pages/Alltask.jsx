@@ -2,25 +2,54 @@ import { Button, FormControl, Input } from "@chakra-ui/react";
 import { useState } from "react";
 import { TaskList } from "../components/TaskList";
 import { addtodo } from "./api/api";
+import { useRouter } from "next/router";
 
 export default function Alltask({ data }) {
   console.log(data);
-  const [text, settext] = useState({});
+  const [newtask, settask] = useState({ title: "", description: "" });
+  const { push } = useRouter();
 
-  function onchange(e) {
+  //   function onchange(e) {
+  //     const { name, value } = e.target;
+  //     settext({
+  //       ...text,
+  //       [name]: value,
+  //     });
+  //   }
+  //   function addtask(e) {
+  //     e.preventDefault();
+  //     addtodo(text);
+  //   }
+
+  async function handlesubmit(e) {
+    e.preventDefault();
+
+    await createTask();
+    await push("/");
+  }
+  async function createTask() {
+    try {
+      await fetch("http://localhost:3000/api/task", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newtask),
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  function handlechange(e) {
     const { name, value } = e.target;
-    settext({
-      ...text,
+    settask({
+      ...newtask,
       [name]: value,
     });
   }
-  function addtask(e) {
-    e.preventDefault();
-    addtodo(text);
-  }
   return (
     <div>
-      <FormControl>
+      {/* <FormControl>
         <Input
           name="title"
           value={text.title}
@@ -35,7 +64,22 @@ export default function Alltask({ data }) {
         />
 
         <Button onClick={addtask}>Add</Button>
-      </FormControl>
+      </FormControl> */}
+      <form onSubmit={handlesubmit}>
+        <input
+          placeholder="title"
+          name="title"
+          value={newtask.title}
+          onChange={handlechange}
+        />
+        <input
+          placeholder="description"
+          value={newtask.description}
+          name="description"
+          onChange={handlechange}
+        />
+        <input type={"submit"} value="Submit" />
+      </form>
       {data.map((list) => (
         <TaskList title={list.title} description={list.description} />
       ))}
